@@ -2,16 +2,8 @@
 // Copyright (c) 2012, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include "include/dart_native_api.h"
 
-
-Dart_NativeFunction ResolveName(Dart_Handle name,
-                                int argc,
-                                bool* auto_setup_scope);
-
+#include "ExtAll.h"
 
 DART_EXPORT Dart_Handle dartivity_extension_Init(Dart_Handle parent_library) {
   if (Dart_IsError(parent_library)) {
@@ -26,15 +18,6 @@ DART_EXPORT Dart_Handle dartivity_extension_Init(Dart_Handle parent_library) {
 
   return Dart_Null();
 }
-
-
-Dart_Handle HandleError(Dart_Handle handle) {
-  if (Dart_IsError(handle)) {
-    Dart_PropagateError(handle);
-  }
-  return handle;
-}
-
 
 void SystemRand(Dart_NativeArguments arguments) {
   Dart_EnterScope();
