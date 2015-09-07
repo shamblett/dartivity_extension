@@ -40,7 +40,14 @@
         <ccTool>
           <incDir>
             <pElem>../../../../../dart-sdk/</pElem>
+            <pElem>../../../../../../../iot/iotivity/sources/git/resource/include</pElem>
+            <pElem>../../../../../../../iot/iotivity/sources/git/resource/csdk/stack/include</pElem>
+            <pElem>../../../../../../../iot/iotivity/sources/git/resource/oc_logger/include</pElem>
+            <pElem>../../../../../../../iot/iotivity/sources/git/resource/c_common</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>c++11</Elem>
+          </preprocessorList>
         </ccTool>
       </compileType>
       <item path="ExtAll.cpp" ex="false" tool="1" flavor2="0">
