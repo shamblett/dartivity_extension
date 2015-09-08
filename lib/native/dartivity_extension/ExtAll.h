@@ -1,10 +1,10 @@
 /* 
  * File:   ExtAll.h
- * Package: amqp_extension
+ * Package: dartivity_extension
  * Author: Steve Hamblett
- * Copyright steve@OSCF 2014
+ * Copyright Steve Hamblett 2015
  *
- * Created on 20 January 2014, 08:06
+ * Created on 9 September 2015, 08:06
  */
 
 #ifndef EXTALL_H
@@ -39,13 +39,7 @@ Dart_NativeFunction ResolveName(Dart_Handle name,
 /**
  * General library wide Dart handle checker
  */
-
 Dart_Handle HandleError(Dart_Handle handle);
-
-/**
- * General library wide exception thrower
- */
-void throwDartivityException(const char* message);
 
 
 #endif	/* EXTALL_H */

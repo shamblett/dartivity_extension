@@ -36,6 +36,7 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 # Object Files
 OBJECTFILES= \
 	${OBJECTDIR}/ExtAll.o \
+	${OBJECTDIR}/ExtPlatform.o \
 	${OBJECTDIR}/dartivity_extension.o
 
 
@@ -66,12 +67,17 @@ ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libdartivity_extension.${CND_DLIB_EXT
 ${OBJECTDIR}/ExtAll.o: ExtAll.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -Dc++11 -I../../../../../dart-sdk/ -I../../../../../../../iot/iotivity/sources/git/resource/include -I../../../../../../../iot/iotivity/sources/git/resource/csdk/stack/include -I../../../../../../../iot/iotivity/sources/git/resource/oc_logger/include -I../../../../../../../iot/iotivity/sources/git/resource/c_common -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/ExtAll.o ExtAll.cpp
+	$(COMPILE.cc) -g -Wall -I../../../../../dart-sdk/ -I../../../../../../../iot/iotivity/sources/git/resource/include -I../../../../../../../iot/iotivity/sources/git/resource/csdk/stack/include -I../../../../../../../iot/iotivity/sources/git/resource/oc_logger/include -I../../../../../../../iot/iotivity/sources/git/resource/c_common -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/ExtAll.o ExtAll.cpp
+
+${OBJECTDIR}/ExtPlatform.o: ExtPlatform.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -Wall -I../../../../../dart-sdk/ -I../../../../../../../iot/iotivity/sources/git/resource/include -I../../../../../../../iot/iotivity/sources/git/resource/csdk/stack/include -I../../../../../../../iot/iotivity/sources/git/resource/oc_logger/include -I../../../../../../../iot/iotivity/sources/git/resource/c_common -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/ExtPlatform.o ExtPlatform.cpp
 
 ${OBJECTDIR}/dartivity_extension.o: dartivity_extension.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -Dc++11 -I../../../../../dart-sdk/ -I../../../../../../../iot/iotivity/sources/git/resource/include -I../../../../../../../iot/iotivity/sources/git/resource/csdk/stack/include -I../../../../../../../iot/iotivity/sources/git/resource/oc_logger/include -I../../../../../../../iot/iotivity/sources/git/resource/c_common -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/dartivity_extension.o dartivity_extension.cpp
+	$(COMPILE.cc) -g -Wall -I../../../../../dart-sdk/ -I../../../../../../../iot/iotivity/sources/git/resource/include -I../../../../../../../iot/iotivity/sources/git/resource/csdk/stack/include -I../../../../../../../iot/iotivity/sources/git/resource/oc_logger/include -I../../../../../../../iot/iotivity/sources/git/resource/c_common -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/dartivity_extension.o dartivity_extension.cpp
 
 # Subprojects
 .build-subprojects:

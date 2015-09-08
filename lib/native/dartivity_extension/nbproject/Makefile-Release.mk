@@ -36,6 +36,7 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 # Object Files
 OBJECTFILES= \
 	${OBJECTDIR}/ExtAll.o \
+	${OBJECTDIR}/ExtPlatform.o \
 	${OBJECTDIR}/dartivity_extension.o
 
 
@@ -67,6 +68,11 @@ ${OBJECTDIR}/ExtAll.o: ExtAll.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/ExtAll.o ExtAll.cpp
+
+${OBJECTDIR}/ExtPlatform.o: ExtPlatform.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/ExtPlatform.o ExtPlatform.cpp
 
 ${OBJECTDIR}/dartivity_extension.o: dartivity_extension.cpp 
 	${MKDIR} -p ${OBJECTDIR}

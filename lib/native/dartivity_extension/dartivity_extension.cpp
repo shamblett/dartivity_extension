@@ -4,6 +4,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 #include "ExtAll.h"
+#include "ExtPlatform.h"
 
 DART_EXPORT Dart_Handle dartivity_extension_Init(Dart_Handle parent_library) {
   if (Dart_IsError(parent_library)) {
@@ -99,19 +100,6 @@ void wrappedRandomArray(Dart_Port dest_port_id,
 }
 
 
-void randomArrayServicePort(Dart_NativeArguments arguments) {
-  Dart_EnterScope();
-  Dart_SetReturnValue(arguments, Dart_Null());
-  Dart_Port service_port =
-      Dart_NewNativePort("RandomArrayService", wrappedRandomArray, true);
-  if (service_port != ILLEGAL_PORT) {
-    Dart_Handle send_port = HandleError(Dart_NewSendPort(service_port));
-    Dart_SetReturnValue(arguments, send_port);
-  }
-  Dart_ExitScope();
-}
-
-
 struct FunctionLookup {
   const char* name;
   Dart_NativeFunction function;
@@ -121,7 +109,7 @@ struct FunctionLookup {
 FunctionLookup function_list[] = {
     {"SystemRand", SystemRand},
     {"SystemSrand", SystemSrand},
-    {"RandomArray_ServicePort", randomArrayServicePort},
+    {"Platform_ServicePort",platformServicePort},
     {NULL, NULL}};
 
 
