@@ -17,7 +17,8 @@ static FILE* client_open(const char* /*path*/, const char *mode) {
 
 void wrappedPlatformCfg(Dart_Port dest_port_id,
         Dart_CObject* message) {
-    Dart_Port reply_port_id = ILLEGAL_PORT;
+    Dart_CObject* param8 = message->value.as_array.values[8];
+    Dart_Port reply_port_id  = param8->value.as_send_port.id;
     if (message->type == Dart_CObject_kArray &&
             9 == message->value.as_array.length) {
         // Use .as_array and .as_int64 to access the data in the Dart_CObject.
@@ -27,7 +28,7 @@ void wrappedPlatformCfg(Dart_Port dest_port_id,
         Dart_CObject* param5 = message->value.as_array.values[5];
         Dart_CObject* param6 = message->value.as_array.values[6];
         Dart_CObject* param7 = message->value.as_array.values[7];
-        Dart_CObject* param8 = message->value.as_array.values[8];
+       
 
         if (param0->type == Dart_CObject_kInt64 &&
                 param1->type == Dart_CObject_kInt64 &&
@@ -42,7 +43,7 @@ void wrappedPlatformCfg(Dart_Port dest_port_id,
             std::string ip = std::string(param5->value.as_string);
             int port = param6->value.as_int64;
             dbFile = std::string(param7->value.as_string);
-            reply_port_id = param8->value.as_send_port.id;
+           
 
             OCPersistentStorage ps{client_open, fread, fwrite, fclose, unlink};
 
@@ -54,7 +55,8 @@ void wrappedPlatformCfg(Dart_Port dest_port_id,
                 (OC::QualityOfService)qos,
                 &ps
             };
-
+            OCPlatform::Configure(cfg);
+            
             Dart_CObject result;
             result.type = Dart_CObject_kBool;
             result.value.as_bool = true;

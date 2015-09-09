@@ -20,52 +20,6 @@ DART_EXPORT Dart_Handle dartivity_extension_Init(Dart_Handle parent_library) {
   return Dart_Null();
 }
 
-void SystemRand(Dart_NativeArguments arguments) {
-  Dart_EnterScope();
-  Dart_Handle result = HandleError(Dart_NewInteger(rand()));
-  Dart_SetReturnValue(arguments, result);
-  Dart_ExitScope();
-}
-
-
-void SystemSrand(Dart_NativeArguments arguments) {
-  Dart_EnterScope();
-  bool success = false;
-  Dart_Handle seed_object = HandleError(Dart_GetNativeArgument(arguments, 0));
-  if (Dart_IsInteger(seed_object)) {
-    bool fits;
-    HandleError(Dart_IntegerFitsIntoInt64(seed_object, &fits));
-    if (fits) {
-      int64_t seed;
-      HandleError(Dart_IntegerToInt64(seed_object, &seed));
-      srand(static_cast<unsigned>(seed));
-      success = true;
-    }
-  }
-  Dart_SetReturnValue(arguments, HandleError(Dart_NewBoolean(success)));
-  Dart_ExitScope();
-}
-
-
-uint8_t* randomArray(int seed, int length) {
-  if (length <= 0 || length > 10000000) {
-    return NULL;
-  }
-  uint8_t* values = reinterpret_cast<uint8_t*>(malloc(length));
-  if (NULL == values) {
-    return NULL;
-  }
-  srand(seed);
-  for (int i = 0; i < length; ++i) {
-    values[i] = rand() % 256;
-  }
-  return values;
-}
-
-
-
-
-
 struct FunctionLookup {
   const char* name;
   Dart_NativeFunction function;
@@ -73,14 +27,12 @@ struct FunctionLookup {
 
 
 FunctionLookup function_list[] = {
-    {"SystemRand", SystemRand},
-    {"SystemSrand", SystemSrand},
     {"Platform_ServicePort",platformServicePort},
     {NULL, NULL}};
 
 
 FunctionLookup no_scope_function_list[] = {
-  {"NoScopeSystemRand", SystemRand},
+  {"Platform_ServicePort",platformServicePort},
   {NULL, NULL}
 };
 
