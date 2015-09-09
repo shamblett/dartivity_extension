@@ -9,50 +9,76 @@
 
 #include "ExtPlatform.h"
 
-void wrappedPlatformClass(Dart_Port dest_port_id,
-                        Dart_CObject* message) {
-  Dart_Port reply_port_id = ILLEGAL_PORT;
-  if (message->type == Dart_CObject_kArray &&
-      3 == message->value.as_array.length) {
-    // Use .as_array and .as_int32 to access the data in the Dart_CObject.
-    Dart_CObject* param0 = message->value.as_array.values[0];
-    Dart_CObject* param1 = message->value.as_array.values[1];
-    Dart_CObject* param2 = message->value.as_array.values[2];
-    if (param0->type == Dart_CObject_kInt32 &&
-        param1->type == Dart_CObject_kInt32 &&
-        param2->type == Dart_CObject_kSendPort) {
-      int seed = param0->value.as_int32;
-      int length = param1->value.as_int32;
-      reply_port_id = param2->value.as_send_port.id;
-      uint8_t* values = randomArray(seed, length);
+static std::string dbFile;
 
-      if (values != NULL) {
-        Dart_CObject result;
-        result.type = Dart_CObject_kTypedData;
-        result.value.as_typed_data.type = Dart_TypedData_kUint8;
-        result.value.as_typed_data.values = values;
-        result.value.as_typed_data.length = length;
-        Dart_PostCObject(reply_port_id, &result);
-        free(values);
-        // It is OK that result is destroyed when function exits.
-        // Dart_PostCObject has copied its data.
-        return;
-      }
+static FILE* client_open(const char* /*path*/, const char *mode) {
+    return fopen(dbFile.c_str(), mode);
+}
+
+void wrappedPlatformCfg(Dart_Port dest_port_id,
+        Dart_CObject* message) {
+    Dart_Port reply_port_id = ILLEGAL_PORT;
+    if (message->type == Dart_CObject_kArray &&
+            9 == message->value.as_array.length) {
+        // Use .as_array and .as_int64 to access the data in the Dart_CObject.
+        Dart_CObject* param0 = message->value.as_array.values[0];
+        Dart_CObject* param1 = message->value.as_array.values[1];
+        Dart_CObject* param2 = message->value.as_array.values[2];
+        Dart_CObject* param5 = message->value.as_array.values[5];
+        Dart_CObject* param6 = message->value.as_array.values[6];
+        Dart_CObject* param7 = message->value.as_array.values[7];
+        Dart_CObject* param8 = message->value.as_array.values[8];
+
+        if (param0->type == Dart_CObject_kInt64 &&
+                param1->type == Dart_CObject_kInt64 &&
+                param2->type == Dart_CObject_kInt64 &&
+                param5->type == Dart_CObject_kString &&
+                param6->type == Dart_CObject_kInt64 &&
+                param7->type == Dart_CObject_kString &&
+                param8->type == Dart_CObject_kSendPort) {
+            int service = param0->value.as_int64;
+            int mode = param1->value.as_int64;
+            int qos = param2->value.as_int64;
+            std::string ip = std::string(param5->value.as_string);
+            int port = param6->value.as_int64;
+            dbFile = std::string(param7->value.as_string);
+            reply_port_id = param8->value.as_send_port.id;
+
+            OCPersistentStorage ps{client_open, fread, fwrite, fclose, unlink};
+
+            PlatformConfig cfg{
+                (OC::ServiceType)service,
+                (OC::ModeType)mode,
+                ip,
+                (uint16_t) port,
+                (OC::QualityOfService)qos,
+                &ps
+            };
+
+            Dart_CObject result;
+            result.type = Dart_CObject_kBool;
+            result.value.as_bool = true;
+            Dart_PostCObject(reply_port_id, &result);
+
+            // It is OK that result is destroyed when function exits.
+            // Dart_PostCObject has copied its data.
+            return;
+        }
     }
-  }
-  Dart_CObject result;
-  result.type = Dart_CObject_kNull;
-  Dart_PostCObject(reply_port_id, &result);
+
+    Dart_CObject result;
+    result.type = Dart_CObject_kNull;
+    Dart_PostCObject(reply_port_id, &result);
 }
 
 void platformServicePort(Dart_NativeArguments arguments) {
-  Dart_EnterScope();
-  Dart_SetReturnValue(arguments, Dart_Null());
-  Dart_Port service_port;// =
-     Dart_NewNativePort("PlatformClass", wrappedPlatformClass, true);
- if (service_port != ILLEGAL_PORT) {
-    Dart_Handle send_port = HandleError(Dart_NewSendPort(service_port));
-    Dart_SetReturnValue(arguments, send_port);
-  }
-  Dart_ExitScope();
+    Dart_EnterScope();
+    Dart_SetReturnValue(arguments, Dart_Null());
+    Dart_Port service_port =
+            Dart_NewNativePort("PlatformCfg", wrappedPlatformCfg, true);
+    if (service_port != ILLEGAL_PORT) {
+        Dart_Handle send_port = HandleError(Dart_NewSendPort(service_port));
+        Dart_SetReturnValue(arguments, send_port);
+    }
+    Dart_ExitScope();
 }

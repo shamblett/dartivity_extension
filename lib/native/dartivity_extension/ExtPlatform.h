@@ -20,7 +20,7 @@ void platformServicePort(Dart_NativeArguments arguments);
 /**
  * Wrapped platform class handler
  */
-void wrappedPlatformClass(Dart_Port dest_port_id,
+void wrappedPlatformCfg(Dart_Port dest_port_id,
         Dart_CObject* message);
 
 #endif	/* EXTPLATFORM_H */
