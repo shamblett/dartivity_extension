@@ -54,7 +54,7 @@ FFLAGS=
 ASFLAGS=
 
 # Link Libraries and Options
-LDLIBSOPTIONS=
+LDLIBSOPTIONS=-L../../../../../../../iot/iotivity/sources/git/out/linux/x86_64/debug -lSSMCore -lSSMSDK -lTGMSDKLibrary -lc_common -lcoap -lconnectivity_abstraction -loc -loc_logger -loc_logger_core -locpmapi -locsrm -loctbstack -lppm -lrcs_client -lrcs_common -lrcs_container -lrcs_server -ltinydtls
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}

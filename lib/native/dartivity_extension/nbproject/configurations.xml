@@ -50,6 +50,31 @@
           </incDir>
           <warningLevel>2</warningLevel>
         </ccTool>
+        <linkerTool>
+          <linkerAddLib>
+            <pElem>../../../../../../../iot/iotivity/sources/git/out/linux/x86_64/debug</pElem>
+          </linkerAddLib>
+          <linkerLibItems>
+            <linkerLibLibItem>SSMCore</linkerLibLibItem>
+            <linkerLibLibItem>SSMSDK</linkerLibLibItem>
+            <linkerLibLibItem>TGMSDKLibrary</linkerLibLibItem>
+            <linkerLibLibItem>c_common</linkerLibLibItem>
+            <linkerLibLibItem>coap</linkerLibLibItem>
+            <linkerLibLibItem>connectivity_abstraction</linkerLibLibItem>
+            <linkerLibLibItem>oc</linkerLibLibItem>
+            <linkerLibLibItem>oc_logger</linkerLibLibItem>
+            <linkerLibLibItem>oc_logger_core</linkerLibLibItem>
+            <linkerLibLibItem>ocpmapi</linkerLibLibItem>
+            <linkerLibLibItem>ocsrm</linkerLibLibItem>
+            <linkerLibLibItem>octbstack</linkerLibLibItem>
+            <linkerLibLibItem>ppm</linkerLibLibItem>
+            <linkerLibLibItem>rcs_client</linkerLibLibItem>
+            <linkerLibLibItem>rcs_common</linkerLibLibItem>
+            <linkerLibLibItem>rcs_container</linkerLibLibItem>
+            <linkerLibLibItem>rcs_server</linkerLibLibItem>
+            <linkerLibLibItem>tinydtls</linkerLibLibItem>
+          </linkerLibItems>
+        </linkerTool>
       </compileType>
       <item path="ExtAll.cpp" ex="false" tool="1" flavor2="0">
       </item>

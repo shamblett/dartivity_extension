@@ -30,12 +30,12 @@ void wrappedPlatformCfg(Dart_Port dest_port_id,
         Dart_CObject* param7 = message->value.as_array.values[7];
        
 
-        if (param0->type == Dart_CObject_kInt64 &&
-                param1->type == Dart_CObject_kInt64 &&
+        if (/*param0->type == Dart_CObject_kInt64 &&
+               param1->type == Dart_CObject_kInt64 &&
                 param2->type == Dart_CObject_kInt64 &&
                 param5->type == Dart_CObject_kString &&
                 param6->type == Dart_CObject_kInt64 &&
-                param7->type == Dart_CObject_kString &&
+                param7->type == Dart_CObject_kString &&*/
                 param8->type == Dart_CObject_kSendPort) {
             int service = param0->value.as_int64;
             int mode = param1->value.as_int64;
