@@ -17,11 +17,15 @@ static FILE* client_open(const char* /*path*/, const char *mode) {
 
 void wrappedPlatformCfg(Dart_Port dest_port_id,
         Dart_CObject* message) {
+    // Get the reply port, we have to assume this is OK or
+    // we acn't reply with null to the caller.
     Dart_CObject* param8 = message->value.as_array.values[8];
     Dart_Port reply_port_id  = param8->value.as_send_port.id;
+    
+    // Arg check and parameter extraction
     if (message->type == Dart_CObject_kArray &&
             9 == message->value.as_array.length) {
-        // Use .as_array and .as_int64 to access the data in the Dart_CObject.
+       
         Dart_CObject* param0 = message->value.as_array.values[0];
         Dart_CObject* param1 = message->value.as_array.values[1];
         Dart_CObject* param2 = message->value.as_array.values[2];
@@ -29,22 +33,21 @@ void wrappedPlatformCfg(Dart_Port dest_port_id,
         Dart_CObject* param6 = message->value.as_array.values[6];
         Dart_CObject* param7 = message->value.as_array.values[7];
        
-
-        if (/*param0->type == Dart_CObject_kInt64 &&
-               param1->type == Dart_CObject_kInt64 &&
-                param2->type == Dart_CObject_kInt64 &&
+        // Parameter check
+        if (param0->type == Dart_CObject_kInt32 &&
+               param1->type == Dart_CObject_kInt32 &&
+                param2->type == Dart_CObject_kInt32 &&
                 param5->type == Dart_CObject_kString &&
-                param6->type == Dart_CObject_kInt64 &&
-                param7->type == Dart_CObject_kString &&*/
-                param8->type == Dart_CObject_kSendPort) {
-            int service = param0->value.as_int64;
-            int mode = param1->value.as_int64;
-            int qos = param2->value.as_int64;
+                param6->type == Dart_CObject_kInt32 &&
+                param7->type == Dart_CObject_kString) {
+            int service = param0->value.as_int32;
+            int mode = param1->value.as_int32;
+            int qos = param2->value.as_int32;
             std::string ip = std::string(param5->value.as_string);
-            int port = param6->value.as_int64;
+            int port = param6->value.as_int32;
             dbFile = std::string(param7->value.as_string);
            
-
+            // Setup and call the Iotivity function
             OCPersistentStorage ps{client_open, fread, fwrite, fclose, unlink};
 
             PlatformConfig cfg{
@@ -57,17 +60,16 @@ void wrappedPlatformCfg(Dart_Port dest_port_id,
             };
             OCPlatform::Configure(cfg);
             
+            // Build and return the result
             Dart_CObject result;
             result.type = Dart_CObject_kBool;
             result.value.as_bool = true;
             Dart_PostCObject(reply_port_id, &result);
-
-            // It is OK that result is destroyed when function exits.
-            // Dart_PostCObject has copied its data.
             return;
         }
     }
 
+    // Failure - return a null result object
     Dart_CObject result;
     result.type = Dart_CObject_kNull;
     Dart_PostCObject(reply_port_id, &result);
