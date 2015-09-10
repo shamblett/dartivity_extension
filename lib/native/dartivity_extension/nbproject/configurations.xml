@@ -48,6 +48,9 @@
             <pElem>../../../../../../../iot/iotivity/sources/git/resource/oc_logger/include</pElem>
             <pElem>../../../../../../../iot/iotivity/sources/git/resource/c_common</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>DEBUG</Elem>
+          </preprocessorList>
           <warningLevel>2</warningLevel>
         </ccTool>
         <linkerTool>

@@ -15,10 +15,16 @@ static FILE* client_open(const char* /*path*/, const char *mode) {
     return fopen(dbFile.c_str(), mode);
 }
 
-void wrappedPlatformCfg(Dart_Port dest_port_id,
+void PlatformCfg(Dart_Port dest_port_id,
+        Dart_CObject* message) {
+
+
+}
+
+void wrappedPlatformService(Dart_Port dest_port_id,
         Dart_CObject* message) {
     // Get the reply port, we have to assume this is OK or
-    // we acn't reply with null to the caller.
+    // we can't reply with null to the caller.
     Dart_CObject* param8 = message->value.as_array.values[8];
     Dart_Port reply_port_id = param8->value.as_send_port.id;
 
@@ -88,7 +94,7 @@ void platformServicePort(Dart_NativeArguments arguments) {
     Dart_EnterScope();
     Dart_SetReturnValue(arguments, Dart_Null());
     Dart_Port service_port =
-            Dart_NewNativePort("PlatformCfg", wrappedPlatformCfg, true);
+            Dart_NewNativePort("PlatformService", wrappedPlatformService, true);
     if (service_port != ILLEGAL_PORT) {
         Dart_Handle send_port = HandleError(Dart_NewSendPort(service_port));
         Dart_SetReturnValue(arguments, send_port);
