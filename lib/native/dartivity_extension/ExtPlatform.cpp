@@ -15,43 +15,42 @@ static FILE* client_open(const char* /*path*/, const char *mode) {
     return fopen(dbFile.c_str(), mode);
 }
 
-void PlatformCfg(Dart_Port dest_port_id,
+void PlatformFindResource(Dart_Port dest_port_id,
         Dart_CObject* message) {
-
-
+    
 }
 
-void wrappedPlatformService(Dart_Port dest_port_id,
+void PlatformCfg(Dart_Port dest_port_id,
         Dart_CObject* message) {
-    // Get the reply port, we have to assume this is OK or
-    // we can't reply with null to the caller.
-    Dart_CObject* param8 = message->value.as_array.values[8];
-    Dart_Port reply_port_id = param8->value.as_send_port.id;
-
+    
+    // Get the service port
+    Dart_CObject* servicePortObject = message->value.as_array.values[EXT_SERVICE_PORT];
+    Dart_Port reply_port_id = servicePortObject->value.as_send_port.id;
+    
     // Arg check and parameter extraction
     if (message->type == Dart_CObject_kArray &&
-            9 == message->value.as_array.length) {
+            PLATFORM_CFG_PARAMS == message->value.as_array.length) {
 
-        Dart_CObject* param0 = message->value.as_array.values[0];
-        Dart_CObject* param1 = message->value.as_array.values[1];
         Dart_CObject* param2 = message->value.as_array.values[2];
-        Dart_CObject* param5 = message->value.as_array.values[5];
-        Dart_CObject* param6 = message->value.as_array.values[6];
+        Dart_CObject* param3 = message->value.as_array.values[3];
+        Dart_CObject* param4 = message->value.as_array.values[4];
         Dart_CObject* param7 = message->value.as_array.values[7];
-
+        Dart_CObject* param8 = message->value.as_array.values[8];
+        Dart_CObject* param9 = message->value.as_array.values[9];
+        
         // Parameter check
-        if (param0->type == Dart_CObject_kInt32 &&
-                param1->type == Dart_CObject_kInt32 &&
-                param2->type == Dart_CObject_kInt32 &&
-                param5->type == Dart_CObject_kString &&
-                param6->type == Dart_CObject_kInt32 &&
-                param7->type == Dart_CObject_kString) {
-            int service = param0->value.as_int32;
-            int mode = param1->value.as_int32;
-            int qos = param2->value.as_int32;
-            std::string ip = std::string(param5->value.as_string);
-            int port = param6->value.as_int32;
-            dbFile = std::string(param7->value.as_string);
+        if (param2->type == Dart_CObject_kInt32 &&
+                param3->type == Dart_CObject_kInt32 &&
+                param4->type == Dart_CObject_kInt32 &&
+                param7->type == Dart_CObject_kString &&
+                param8->type == Dart_CObject_kInt32 &&
+                param9->type == Dart_CObject_kString) {
+            int service = param2->value.as_int32;
+            int mode = param3->value.as_int32;
+            int qos = param4->value.as_int32;
+            std::string ip = std::string(param7->value.as_string);
+            int port = param8->value.as_int32;
+            dbFile = std::string(param9->value.as_string);
 
             // Setup and call the Iotivity function
             OCPersistentStorage ps{client_open, fread, fwrite, fclose, unlink};
@@ -83,7 +82,42 @@ void wrappedPlatformService(Dart_Port dest_port_id,
             return;
         }
     }
+    
+    // Failure - return a null result object
+    Dart_CObject result;
+    result.type = Dart_CObject_kNull;
+    Dart_PostCObject(reply_port_id, &result);
 
+}
+
+void wrappedPlatformService(Dart_Port dest_port_id,
+        Dart_CObject* message) {
+    // Get the reply port, we have to assume this is OK or
+    // we can't reply with null to the caller.
+    Dart_CObject* servicePortObject = message->value.as_array.values[EXT_SERVICE_PORT];
+    Dart_Port reply_port_id = servicePortObject->value.as_send_port.id;
+
+    // Switch on the incoming command
+    Dart_CObject* commandObject = message->value.as_array.values[EXT_COMMAND];
+    if (commandObject->type == Dart_CObject_kInt32) {
+        int command = commandObject->value.as_int32;
+        switch (command) {
+
+            case PLATFORM_CFG:
+                PlatformCfg(dest_port_id, message);
+                return;
+            
+            case PLATFORM_FIND_RESOURCE:
+                PlatformFindResource(dest_port_id, message);
+                return;
+                
+            default:
+#ifdef DEBUG
+                std::cout << "wrappedPlatformService::Oops invalid command - value is " << command << " " << std::endl;
+#endif
+                break;
+        }
+    }
     // Failure - return a null result object
     Dart_CObject result;
     result.type = Dart_CObject_kNull;

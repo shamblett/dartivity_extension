@@ -30,6 +30,12 @@ using namespace OC;
 #include "include/dart_native_api.h"
 
 /**
+ Parameter block offsets 
+ */
+const int EXT_COMMAND = 0;
+const int EXT_SERVICE_PORT = 1;
+
+/**
  * General library wide native functions
  */
 Dart_NativeFunction ResolveName(Dart_Handle name,

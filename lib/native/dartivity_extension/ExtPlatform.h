@@ -13,6 +13,17 @@
 #include "ExtAll.h"
 
 /**
+ * Function identifiers
+ */
+const int PLATFORM_CFG = 1;
+const int PLATFORM_FIND_RESOURCE = 2;
+
+/**
+ * Number of command parameters
+ */
+const int PLATFORM_CFG_PARAMS = 10;
+
+/**
  * Service port
  */
 void platformServicePort(Dart_NativeArguments arguments);
