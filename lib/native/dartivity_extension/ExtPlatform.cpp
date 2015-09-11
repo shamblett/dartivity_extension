@@ -9,37 +9,34 @@
 
 #include "ExtPlatform.h"
 
-static std::string dbFile;
+static std::string dbFile; // there is only one
+
+std::mutex resourceMutex;
 
 static FILE* client_open(const char* /*path*/, const char *mode) {
     return fopen(dbFile.c_str(), mode);
 }
 
+class resourceFindCallback {
+public:
+
+    static void foundResource(std::shared_ptr<OCResource> resource) {
+        // Build and return the result
+        Dart_CObject result;
+        result.type = Dart_CObject_kBool;
+        result.value.as_bool = true;
+        Dart_CObject* servicePortObject = message->value.as_array.values[EXT_SERVICE_PORT];
+        Dart_Port reply_port_id = servicePortObject->value.as_send_port.id;
+        Dart_PostCObject(reply_port_id, &result);
+    }
+
+    static Dart_CObject* message;
+
+};
+
 void platformFindResource(Dart_Port dest_port_id,
         Dart_CObject* message) {
 
-   
-
-    // Get the service port
-    
-
-    // Resource callback
-
-    struct X {
-
-        void foundResource(std::shared_ptr<OCResource> resource) {
-
-
-            // Build and return the result
-            Dart_CObject result;
-            result.type = Dart_CObject_kBool;
-            result.value.as_bool = true;
-            Dart_CObject* servicePortObject = message->value.as_array.values[EXT_SERVICE_PORT];
-            Dart_Port reply_port_id = servicePortObject->value.as_send_port.id;
-            Dart_PostCObject(reply_port_id, &result);
-            return;
-        }
-    };
 
     // Arg check and parameter extraction
     if (message->type == Dart_CObject_kArray &&
@@ -61,15 +58,15 @@ void platformFindResource(Dart_Port dest_port_id,
             std::cout << "<<< platformFindResource - Param Block >>>" << std::endl;
             std::cout << "Host - " << host << std::endl;
             std::cout << "Resource Name - " << resourceName << std::endl;
+            std::cout << "Connectivity - " << connectivity << std::endl;
             std::cout << "<<< Param Block >>>" << std::endl;
 #endif         
-
-
-            // Call find resource
+            // Call find resource, mutexed
+            resourceMutex.lock();
+            resourceFindCallback::message = message;
             OCPlatform::findResource(host, resourceName,
-                    CT_DEFAULT, &X::foundResource);
-
-
+                    CT_DEFAULT, resourceFindCallback::foundResource);
+            resourceMutex.unlock();
         }
     }
 
