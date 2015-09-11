@@ -21,10 +21,14 @@ class resourceFindCallback {
 public:
 
     static void foundResource(std::shared_ptr<OCResource> resource) {
+
+#ifdef DEBUG
+        std::cout << "<<< foundResource - id is " << resource->uniqueIdentifier() << std::endl;
+#endif
         // Build and return the result
         Dart_CObject result;
-        result.type = Dart_CObject_kBool;
-        result.value.as_bool = true;
+        result.type = Dart_CObject_kExternalTypedData;
+        result.value.as_external_typed_data.peer = (void*) resource.get();
         Dart_CObject* servicePortObject = message->value.as_array.values[EXT_SERVICE_PORT];
         Dart_Port reply_port_id = servicePortObject->value.as_send_port.id;
         Dart_PostCObject(reply_port_id, &result);
