@@ -22,7 +22,7 @@ const int PLATFORM_FIND_RESOURCE = 2;
  * Number of command parameters
  */
 const int PLATFORM_CFG_PARAMS = 10;
-
+const int PLATFORM_FIND_RESOURCES_PARAMS = 5;
 /**
  * Service port
  */
