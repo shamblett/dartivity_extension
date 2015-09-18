@@ -57,6 +57,7 @@
           <linkerAddLib>
             <pElem>../../../../../../../iot/iotivity/sources/git/out/linux/x86_64/debug</pElem>
           </linkerAddLib>
+          <commandlineTool>g++</commandlineTool>
           <linkerLibItems>
             <linkerLibLibItem>SSMCore</linkerLibLibItem>
             <linkerLibLibItem>SSMSDK</linkerLibLibItem>
@@ -76,6 +77,11 @@
             <linkerLibLibItem>rcs_container</linkerLibLibItem>
             <linkerLibLibItem>rcs_server</linkerLibLibItem>
             <linkerLibLibItem>tinydtls</linkerLibLibItem>
+            <linkerLibLibItem>NotificationManager</linkerLibLibItem>
+            <linkerLibLibItem>TestBundle</linkerLibLibItem>
+            <linkerLibLibItem>cpluff</linkerLibLibItem>
+            <linkerLibLibItem>mosquitto</linkerLibLibItem>
+            <linkerLibLibItem>pmimpl</linkerLibLibItem>
           </linkerLibItems>
         </linkerTool>
       </compileType>

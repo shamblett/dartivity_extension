@@ -29,14 +29,15 @@ public:
         Dart_CObject result;
         result.type = Dart_CObject_kExternalTypedData;
         result.value.as_external_typed_data.peer = (void*) resource.get();
-        Dart_CObject* servicePortObject = message->value.as_array.values[EXT_SERVICE_PORT];
+        Dart_CObject* servicePortObject = m_message->value.as_array.values[EXT_SERVICE_PORT];
         Dart_Port reply_port_id = servicePortObject->value.as_send_port.id;
         Dart_PostCObject(reply_port_id, &result);
     }
 
-    static Dart_CObject* message;
+    static Dart_CObject* m_message;
 
 };
+Dart_CObject* resourceFindCallback::m_message;
 
 void platformFindResource(Dart_Port dest_port_id,
         Dart_CObject* message) {
@@ -67,10 +68,19 @@ void platformFindResource(Dart_Port dest_port_id,
 #endif         
             // Call find resource, mutexed
             resourceMutex.lock();
-            resourceFindCallback::message = message;
+            resourceFindCallback::m_message = message;
+            std::cout << " platformFindResource - in mutex calling findResource" << std::endl;
             OCPlatform::findResource(host, resourceName,
                     CT_DEFAULT, resourceFindCallback::foundResource);
             resourceMutex.unlock();
+            std::cout << " platformFindResource - out of mutex returning result" << std::endl;
+            // Return a boolean here to indicate no resources found
+            Dart_CObject* servicePortObject = message->value.as_array.values[EXT_SERVICE_PORT];
+            Dart_Port reply_port_id = servicePortObject->value.as_send_port.id;
+            Dart_CObject result;
+            result.type = Dart_CObject_kBool;
+            result.value.as_bool = false;
+            Dart_PostCObject(reply_port_id, &result);
         }
     }
 
