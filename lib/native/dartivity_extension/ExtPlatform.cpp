@@ -9,39 +9,61 @@
 
 #include "ExtPlatform.h"
 
-static std::string dbFile; // there is only one
-
+// Resource mutex
 std::mutex resourceMutex;
 
-static FILE* client_open(const char* /*path*/, const char *mode) {
-    return fopen(dbFile.c_str(), mode);
-}
+// Find Resource callback class
 
 class resourceFindCallback {
 public:
 
-    static void foundResource(std::shared_ptr<OCResource> resource) {
-
-#ifdef DEBUG
-        std::cout << "<<< foundResource - id is " << resource->uniqueIdentifier() << std::endl;
-#endif
-        // Build and return the result
-        Dart_CObject result;
-        result.type = Dart_CObject_kExternalTypedData;
-        result.value.as_external_typed_data.peer = (void*) resource.get();
-        Dart_CObject* servicePortObject = m_message->value.as_array.values[EXT_SERVICE_PORT];
-        Dart_Port reply_port_id = servicePortObject->value.as_send_port.id;
-        Dart_PostCObject(reply_port_id, &result);
-        resourceMutex.unlock();
-#ifdef DEBUG
-        std::cout << " foundResource - out of mutex returned result" << std::endl;
-#endif
-    }
+    static void foundResource(std::shared_ptr<OCResource> resource);
 
     static Dart_CObject* m_message;
+    static bool m_callbackInvoked;
 
 };
 Dart_CObject* resourceFindCallback::m_message;
+bool resourceFindCallback::m_callbackInvoked;
+
+void resourceFindCallback::foundResource(std::shared_ptr<OCResource> resource) {
+
+    Dart_CObject result;
+
+    // Indicate invocation
+    m_callbackInvoked = true;
+
+    try {
+        // Check for a null resource
+        if (resource == NULL) {
+            // Return a boolean here to indicate no resources found
+            Dart_CObject* servicePortObject = m_message->value.as_array.values[EXT_SERVICE_PORT];
+            Dart_Port reply_port_id = servicePortObject->value.as_send_port.id;
+            result.type = Dart_CObject_kBool;
+            result.value.as_bool = false;
+            Dart_PostCObject(reply_port_id, &result);
+#ifdef DEBUG
+            std::cout << "<<< foundResource - returned invalid result" << std::endl;
+#endif
+        } else {
+#ifdef DEBUG
+            //std::cout << "<<< foundResource - resource id is " << resource->uniqueIdentifier() << std::endl;
+#endif
+            // Build and return the result for a found resource
+            Dart_CObject* servicePortObject = m_message->value.as_array.values[EXT_SERVICE_PORT];
+            Dart_Port reply_port_id = servicePortObject->value.as_send_port.id;
+            result.type = Dart_CObject_kInt64;
+            result.value.as_int64 = (int64_t) resource.get();
+            Dart_PostCObject(reply_port_id, &result);
+#ifdef DEBUG
+            std::cout << "<<< foundResource - returned valid result id is " << resource->uniqueIdentifier() << std::endl;
+#endif
+        }
+    } catch (std::exception& e) {
+        std::cout << "Exception in foundResource: " << e.what() << std::endl;
+    }
+
+}
 
 void platformFindResource(Dart_Port dest_port_id,
         Dart_CObject* message) {
@@ -73,36 +95,60 @@ void platformFindResource(Dart_Port dest_port_id,
             // Call find resource, mutexed
             resourceMutex.lock();
             resourceFindCallback::m_message = message;
+            resourceFindCallback::m_callbackInvoked = false;
 #ifdef DEBUG
-            std::cout << " platformFindResource - in mutex calling findResource" << std::endl;
+            std::cout << "<<< platformFindResource - in mutex calling findResource" << std::endl;
 #endif
-            OCPlatform::findResource(host, resourceName,
+            OCStackResult res = OCPlatform::findResource(host, resourceName,
                     CT_DEFAULT, resourceFindCallback::foundResource);
-            // Return a boolean here to indicate no resources found
-            Dart_CObject* servicePortObject = message->value.as_array.values[EXT_SERVICE_PORT];
-            Dart_Port reply_port_id = servicePortObject->value.as_send_port.id;
-            Dart_CObject result;
-            result.type = Dart_CObject_kBool;
-            result.value.as_bool = false;
-            Dart_PostCObject(reply_port_id, &result);
-            resourceMutex.unlock();
+            if (res != OC_STACK_OK) {
+                std::cout << "<<< platformFindResource call failed, result is " << res << std::endl;
+            }
 #ifdef DEBUG
-            std::cout << " platformFindResource - out of mutex returned result" << std::endl;
+            std::cout << "<<< platformFindResource - in mutex returned from findResource call" << std::endl;
 #endif
-        }
-    }
+            // Wait until we either find the resource or give up, in which case we
+            // return failed to find resource. Note, to allow the iotivity client to work better
+            // we do lots of little sleeps rather than a few big ones.
+            // TODO add params to tune this loop rather than rely on hard code.
+            int waitCount = 0;
+            while (!resourceFindCallback::m_callbackInvoked) {
+                waitCount++;
+                if (waitCount == 10000) {
+                    // Return a boolean here to indicate no resources found
+                    Dart_CObject* servicePortObject = message->value.as_array.values[EXT_SERVICE_PORT];
+                    Dart_Port reply_port_id = servicePortObject->value.as_send_port.id;
+                    Dart_CObject result;
+                    result.type = Dart_CObject_kBool;
+                    result.value.as_bool = false;
+                    Dart_PostCObject(reply_port_id, &result);
 
-    // Failure - return a null result objects   
-    Dart_CObject* servicePortObject = message->value.as_array.values[EXT_SERVICE_PORT];
-    Dart_Port reply_port_id = servicePortObject->value.as_send_port.id;
-    Dart_CObject result;
-    result.type = Dart_CObject_kNull;
-    Dart_PostCObject(reply_port_id, &result);
+#ifdef DEBUG
+                    std::cout << "<<< platformFindResource - in mutex returned not found result" << std::endl;
+#endif
+                    break;
+                } else {
+                    usleep(500); //microseconds
+                }
+            }
+        }
+        // Either we have found the resource or we have timed out, either way release the mutex
+        resourceMutex.unlock();
+
+    } else {
+
+        // Failure - return a null result objects   
+        Dart_CObject* servicePortObject = message->value.as_array.values[EXT_SERVICE_PORT];
+        Dart_Port reply_port_id = servicePortObject->value.as_send_port.id;
+        Dart_CObject result;
+        result.type = Dart_CObject_kNull;
+        Dart_PostCObject(reply_port_id, &result);
+    }
 
 }
 
 void platformCfg(Dart_Port dest_port_id,
-        Dart_CObject* message) {
+        Dart_CObject * message) {
 
     // Get the service port
     Dart_CObject* servicePortObject = message->value.as_array.values[EXT_SERVICE_PORT];
@@ -115,34 +161,34 @@ void platformCfg(Dart_Port dest_port_id,
         Dart_CObject* param2 = message->value.as_array.values[2];
         Dart_CObject* param3 = message->value.as_array.values[3];
         Dart_CObject* param4 = message->value.as_array.values[4];
+        Dart_CObject* param5 = message->value.as_array.values[5];
+        Dart_CObject* param6 = message->value.as_array.values[6];
         Dart_CObject* param7 = message->value.as_array.values[7];
-        Dart_CObject* param8 = message->value.as_array.values[8];
-        Dart_CObject* param9 = message->value.as_array.values[9];
 
         // Parameter check
         if (param2->type == Dart_CObject_kInt32 &&
                 param3->type == Dart_CObject_kInt32 &&
                 param4->type == Dart_CObject_kInt32 &&
-                param7->type == Dart_CObject_kString &&
-                param8->type == Dart_CObject_kInt32 &&
-                param9->type == Dart_CObject_kString) {
+                param5->type == Dart_CObject_kInt32 &&
+                param6->type == Dart_CObject_kString &&
+                param7->type == Dart_CObject_kInt32) {
             int service = param2->value.as_int32;
             int mode = param3->value.as_int32;
             int qos = param4->value.as_int32;
-            std::string ip = std::string(param7->value.as_string);
-            int port = param8->value.as_int32;
-            dbFile = std::string(param9->value.as_string);
+            int clientConn = param5->value.as_int32;
+            std::string ip = std::string(param6->value.as_string);
+            int port = param7->value.as_int32;
 
             // Setup and call the Iotivity function
-            OCPersistentStorage ps{client_open, fread, fwrite, fclose, unlink};
+
 #ifdef DEBUG
-            std::cout << "<<<platformCfg - Param Block >>>" << std::endl;
+            std::cout << "<<< platformCfg - Param Block >>>" << std::endl;
             std::cout << "Service Type - " << service << std::endl;
             std::cout << "Mode - " << mode << std::endl;
             std::cout << "IP - " << ip << std::endl;
             std::cout << "Port - " << port << std::endl;
             std::cout << "Qos - " << qos << std::endl;
-            std::cout << "Db File - " << dbFile << std::endl;
+            std::cout << "Client Connectivity - " << clientConn << std::endl;
             std::cout << "<<< Param Block >>>" << std::endl;
 #endif            
             PlatformConfig cfg{
@@ -151,7 +197,7 @@ void platformCfg(Dart_Port dest_port_id,
                 ip,
                 (uint16_t) port,
                 (OC::QualityOfService)qos,
-                &ps
+                NULL
             };
             OCPlatform::Configure(cfg);
 
@@ -172,7 +218,7 @@ void platformCfg(Dart_Port dest_port_id,
 }
 
 void wrappedPlatformService(Dart_Port dest_port_id,
-        Dart_CObject* message) {
+        Dart_CObject * message) {
     // Get the reply port, we have to assume this is OK or
     // we can't reply with null to the caller.
     Dart_CObject* servicePortObject = message->value.as_array.values[EXT_SERVICE_PORT];
