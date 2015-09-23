@@ -37,6 +37,7 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 OBJECTFILES= \
 	${OBJECTDIR}/ExtAll.o \
 	${OBJECTDIR}/ExtPlatform.o \
+	${OBJECTDIR}/ExtResource.o \
 	${OBJECTDIR}/dartivity_extension.o
 
 
@@ -73,6 +74,11 @@ ${OBJECTDIR}/ExtPlatform.o: ExtPlatform.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -g -Wall -DDEBUG -I../../../../../dart-sdk/ -I../../../../../../../iot/iotivity/sources/git/resource/include -I../../../../../../../iot/iotivity/sources/git/resource/csdk/stack/include -I../../../../../../../iot/iotivity/sources/git/resource/oc_logger/include -I../../../../../../../iot/iotivity/sources/git/resource/c_common -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/ExtPlatform.o ExtPlatform.cpp
+
+${OBJECTDIR}/ExtResource.o: ExtResource.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -Wall -DDEBUG -I../../../../../dart-sdk/ -I../../../../../../../iot/iotivity/sources/git/resource/include -I../../../../../../../iot/iotivity/sources/git/resource/csdk/stack/include -I../../../../../../../iot/iotivity/sources/git/resource/oc_logger/include -I../../../../../../../iot/iotivity/sources/git/resource/c_common -std=c++11 -fPIC  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/ExtResource.o ExtResource.cpp
 
 ${OBJECTDIR}/dartivity_extension.o: dartivity_extension.cpp 
 	${MKDIR} -p ${OBJECTDIR}

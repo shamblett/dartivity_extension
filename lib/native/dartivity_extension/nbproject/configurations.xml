@@ -6,6 +6,7 @@
                    projectFiles="true">
       <itemPath>ExtAll.h</itemPath>
       <itemPath>ExtPlatform.h</itemPath>
+      <itemPath>ExtResource.h</itemPath>
     </logicalFolder>
     <logicalFolder name="ResourceFiles"
                    displayName="Resource Files"
@@ -16,6 +17,7 @@
                    projectFiles="true">
       <itemPath>ExtAll.cpp</itemPath>
       <itemPath>ExtPlatform.cpp</itemPath>
+      <itemPath>ExtResource.cpp</itemPath>
       <itemPath>dartivity_extension.cpp</itemPath>
     </logicalFolder>
     <logicalFolder name="TestFiles"
@@ -93,6 +95,10 @@
       </item>
       <item path="ExtPlatform.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="ExtResource.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="ExtResource.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="dartivity_extension.cpp" ex="false" tool="1" flavor2="0">
       </item>
     </conf>
@@ -123,6 +129,10 @@
       <item path="ExtPlatform.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="ExtPlatform.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="ExtResource.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="ExtResource.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="dartivity_extension.cpp" ex="false" tool="1" flavor2="0">
       </item>

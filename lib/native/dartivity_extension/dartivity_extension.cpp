@@ -5,6 +5,7 @@
 
 #include "ExtAll.h"
 #include "ExtPlatform.h"
+#include "ExtResource.h"
 
 DART_EXPORT Dart_Handle dartivity_extension_Init(Dart_Handle parent_library) {
   if (Dart_IsError(parent_library)) {
@@ -28,6 +29,7 @@ struct FunctionLookup {
 
 FunctionLookup function_list[] = {
     {"Platform_ServicePort",platformServicePort},
+    {"Resource_ServicePort",resourceServicePort},
     {NULL, NULL}};
 
 

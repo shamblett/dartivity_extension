@@ -1,5 +1,5 @@
 /* 
- * File:   ExtAll.cpp
+ * File:   ExtPLatform.cpp
  * Package: dartivity_extension
  * Author: S. Hamblett <steve.hamblett@linux.com>
  * Copyright S. Hamblett 2015
@@ -29,7 +29,9 @@ bool resourceFindCallback::m_callbackInvoked;
 void resourceFindCallback::foundResource(std::shared_ptr<OCResource> resource) {
 
     Dart_CObject result;
-
+    Dart_CObject uniqueId;
+    Dart_CObject ptr;
+    
     // Indicate invocation
     m_callbackInvoked = true;
 
@@ -50,10 +52,32 @@ void resourceFindCallback::foundResource(std::shared_ptr<OCResource> resource) {
             //std::cout << "<<< foundResource - resource id is " << resource->uniqueIdentifier() << std::endl;
 #endif
             // Build and return the result for a found resource
+            // Create a proxy object from the resource so we can see this outside
+            // of this handler. Also, the proxy object doesn't allow access to the
+            // unique identifier, so get this and send it back seperately.
+            OCResource::Ptr resourcePtr = OCPlatform::constructResourceObject(resource->host(),
+                    resource->uri(),
+                    resource->connectivityType(), resource->isObservable(),
+                    resource->getResourceTypes(),
+                    resource->getResourceInterfaces());
             Dart_CObject* servicePortObject = m_message->value.as_array.values[EXT_SERVICE_PORT];
             Dart_Port reply_port_id = servicePortObject->value.as_send_port.id;
-            result.type = Dart_CObject_kInt64;
-            result.value.as_int64 = (int64_t) resource.get();
+            ptr.type = Dart_CObject_kInt64;
+            ptr.value.as_int64 = reinterpret_cast<int64_t>(resourcePtr.get());
+            std::ostringstream oid;
+            oid << resource->uniqueIdentifier();
+            uniqueId.type = Dart_CObject_kString;
+            uniqueId.value.as_string = const_cast<char*>(oid.str().c_str());
+            std::cout << "SJH1" << std::endl;
+            result.type = Dart_CObject_kArray;
+            uint8_t* arrPtr = Dart_ScopeAllocate(sizeof(Dart_CObject*) * 2);
+            result.value.as_array.values = (Dart_CObject**)arrPtr;
+            //result.value.as_array.values[0] = &ptr;
+            std::cout << "SJH2" << std::endl;
+            result.value.as_array.values[1] = &uniqueId;
+
+            result.value.as_array.length = 2;
+            
             Dart_PostCObject(reply_port_id, &result);
 #ifdef DEBUG
             std::cout << "<<< foundResource - returned valid result id is " << resource->uniqueIdentifier() << std::endl;
