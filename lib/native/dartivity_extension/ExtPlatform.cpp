@@ -62,18 +62,23 @@ void resourceFindCallback::foundResource(std::shared_ptr<OCResource> resource) {
             Dart_Port reply_port_id = servicePortObject->value.as_send_port.id;
             Dart_CObject uniqueId;
             Dart_CObject ptr;
-            Dart_CObject* temp[2];
+            Dart_CObject retUri;
+            Dart_CObject* temp[3];
             ptr.type = Dart_CObject_kInt64;
             ptr.value.as_int64 = reinterpret_cast<int64_t> (resourcePtr.get());
             std::ostringstream oid;
             oid << resource->uniqueIdentifier();
             uniqueId.type = Dart_CObject_kString;
             uniqueId.value.as_string = const_cast<char*> (oid.str().c_str());
+            std::string uri = resource->uri();
+            retUri.type = Dart_CObject_kString;
+            retUri.value.as_string = const_cast<char*> (uri.c_str());
             temp[0] = &ptr;
             temp[1] = &uniqueId;
+            temp[2] = &retUri;
             result.type = Dart_CObject_kArray;
             result.value.as_array.values = temp;
-            result.value.as_array.length = 2;
+            result.value.as_array.length = 3;
             Dart_PostCObject(reply_port_id, &result);
 #ifdef DEBUG
             std::cout << "<<< foundResource - returned valid result id is " << resource->uniqueIdentifier() << std::endl;

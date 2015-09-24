@@ -15,12 +15,14 @@
 /**
  * Function identifiers
  */
-const int RESOURCE_ID = 1;
+const int RESOURCE_HOST = 1;
+const int RESOURCE_URI = 2;
 
 /**
  * Number of command parameters
  */
-const int RESOURCE_ID_PARAMS = 3;
+const int RESOURCE_HOST_PARAMS = 3;
+const int RESOURCE_URI_PARAMS = 3;
 
 /**
  * Service port
