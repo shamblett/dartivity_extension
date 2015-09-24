@@ -29,9 +29,7 @@ bool resourceFindCallback::m_callbackInvoked;
 void resourceFindCallback::foundResource(std::shared_ptr<OCResource> resource) {
 
     Dart_CObject result;
-    Dart_CObject uniqueId;
-    Dart_CObject ptr;
-    
+
     // Indicate invocation
     m_callbackInvoked = true;
 
@@ -62,22 +60,20 @@ void resourceFindCallback::foundResource(std::shared_ptr<OCResource> resource) {
                     resource->getResourceInterfaces());
             Dart_CObject* servicePortObject = m_message->value.as_array.values[EXT_SERVICE_PORT];
             Dart_Port reply_port_id = servicePortObject->value.as_send_port.id;
+            Dart_CObject uniqueId;
+            Dart_CObject ptr;
+            Dart_CObject* temp[2];
             ptr.type = Dart_CObject_kInt64;
-            ptr.value.as_int64 = reinterpret_cast<int64_t>(resourcePtr.get());
+            ptr.value.as_int64 = reinterpret_cast<int64_t> (resourcePtr.get());
             std::ostringstream oid;
             oid << resource->uniqueIdentifier();
             uniqueId.type = Dart_CObject_kString;
-            uniqueId.value.as_string = const_cast<char*>(oid.str().c_str());
-            std::cout << "SJH1" << std::endl;
+            uniqueId.value.as_string = const_cast<char*> (oid.str().c_str());
+            temp[0] = &ptr;
+            temp[1] = &uniqueId;
             result.type = Dart_CObject_kArray;
-            uint8_t* arrPtr = Dart_ScopeAllocate(sizeof(Dart_CObject*) * 2);
-            result.value.as_array.values = (Dart_CObject**)arrPtr;
-            //result.value.as_array.values[0] = &ptr;
-            std::cout << "SJH2" << std::endl;
-            result.value.as_array.values[1] = &uniqueId;
-
+            result.value.as_array.values = temp;
             result.value.as_array.length = 2;
-            
             Dart_PostCObject(reply_port_id, &result);
 #ifdef DEBUG
             std::cout << "<<< foundResource - returned valid result id is " << resource->uniqueIdentifier() << std::endl;
