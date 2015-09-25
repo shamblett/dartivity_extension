@@ -23,6 +23,12 @@ const int PLATFORM_FIND_RESOURCE = 2;
  */
 const int PLATFORM_CFG_PARAMS = 10;
 const int PLATFORM_FIND_RESOURCES_PARAMS = 5;
+
+/**
+ * Number of return parameters
+ */
+const int PLATFORM_FIND_RESOURCES_RET_PARAMS = 7;
+
 /**
  * Service port
  */
