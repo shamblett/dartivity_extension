@@ -73,12 +73,6 @@ void resourceFindCallback::foundResource(std::shared_ptr<OCResource> resource) {
             retHost.type = Dart_CObject_kString;
             retHost.value.as_string = const_cast<char*> (host.c_str());
             
-            // Unique id
-            Dart_CObject retUid;
-            std::ostringstream uid;
-            uid << resource->uniqueIdentifier();
-            retUid.type = Dart_CObject_kString;
-            retUid.value.as_string = const_cast<char*> (uid.str().c_str());
             
             // Uri
             Dart_CObject retUri;
@@ -86,15 +80,56 @@ void resourceFindCallback::foundResource(std::shared_ptr<OCResource> resource) {
             retUri.type = Dart_CObject_kString;
             retUri.value.as_string = const_cast<char*> (uri.c_str());
 
+            // Resource types
+            Dart_CObject retResourceTypes;
+            std::vector<std::string> resourceTypes = resource->getResourceTypes();
+            // Encode as one long string
+            std::string outResourceString;
+            for (std::vector<std::string>::iterator it = resourceTypes.begin(); it != resourceTypes.end(); ++it) {
+                outResourceString+= *it;
+                outResourceString+="??";
+            }
+            retResourceTypes.type = Dart_CObject_kString;
+            retResourceTypes.value.as_string =  const_cast<char*>(outResourceString.c_str());
+            
+            // Interface types
+            Dart_CObject retInterfaceTypes;
+            std::vector<std::string> interfaceTypes = resource->getResourceInterfaces();
+            // Encode as one long string
+            std::string outInterfaceString;
+            for (std::vector<std::string>::iterator it = interfaceTypes.begin(); it != interfaceTypes.end(); ++it) {
+                outInterfaceString+= *it;
+                outInterfaceString+="??";
+            }
+            retInterfaceTypes.type = Dart_CObject_kString;
+            retInterfaceTypes.value.as_string =  const_cast<char*>(outInterfaceString.c_str());
+            
+            // Observable
+            Dart_CObject retObservable;
+            bool observable = resource->isObservable();
+            retObservable.type = Dart_CObject_kBool;
+            retObservable.value.as_bool = observable;
+            
+            // Unique id
+            Dart_CObject retUid;
+            std::ostringstream uid;
+            uid << resource->uniqueIdentifier();
+            retUid.type = Dart_CObject_kString;
+            retUid.value.as_string = const_cast<char*> (uid.str().c_str());
+            
             // Return it all
-            Dart_CObject * temp[4];
+            Dart_CObject * temp[7];
             temp[0] = &retPtr;
             temp[1] = &retUid;
             temp[2] = &retUri;
             temp[3] = &retHost;
+            temp[4] = &retResourceTypes;
+            temp[5] = &retInterfaceTypes;
+            temp[6] = &retObservable;
+            
             result.type = Dart_CObject_kArray;
             result.value.as_array.values = temp;
-            result.value.as_array.length = 4;
+            result.value.as_array.length = 7;
             Dart_CObject* servicePortObject = m_message->value.as_array.values[EXT_SERVICE_PORT];
             Dart_Port reply_port_id = servicePortObject->value.as_send_port.id;
             Dart_PostCObject(reply_port_id, &result);
