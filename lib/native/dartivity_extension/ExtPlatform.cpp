@@ -51,34 +51,52 @@ void resourceFindCallback::foundResource(std::shared_ptr<OCResource> resource) {
 #endif
             // Build and return the result for a found resource
             // Create a proxy object from the resource so we can see this outside
-            // of this handler. Also, the proxy object doesn't allow access to the
-            // unique identifier, so get this and send it back seperately.
+            // of this handler. 
             OCResource::Ptr resourcePtr = OCPlatform::constructResourceObject(resource->host(),
                     resource->uri(),
                     resource->connectivityType(), resource->isObservable(),
                     resource->getResourceTypes(),
                     resource->getResourceInterfaces());
-            Dart_CObject* servicePortObject = m_message->value.as_array.values[EXT_SERVICE_PORT];
-            Dart_Port reply_port_id = servicePortObject->value.as_send_port.id;
-            Dart_CObject uniqueId;
-            Dart_CObject ptr;
+
+
+            // The proxy object is only supports put/get/observe functionality so get as 
+            // much resource data as we can here and return it to create a resource class.
+
+            // The pointer
+            Dart_CObject retPtr;
+            retPtr.type = Dart_CObject_kInt64;
+            retPtr.value.as_int64 = reinterpret_cast<int64_t> (resourcePtr.get());
+
+            // Host
+            Dart_CObject retHost;
+            std::string host = resource->host();
+            retHost.type = Dart_CObject_kString;
+            retHost.value.as_string = const_cast<char*> (host.c_str());
+            
+            // Unique id
+            Dart_CObject retUid;
+            std::ostringstream uid;
+            uid << resource->uniqueIdentifier();
+            retUid.type = Dart_CObject_kString;
+            retUid.value.as_string = const_cast<char*> (uid.str().c_str());
+            
+            // Uri
             Dart_CObject retUri;
-            Dart_CObject* temp[3];
-            ptr.type = Dart_CObject_kInt64;
-            ptr.value.as_int64 = reinterpret_cast<int64_t> (resourcePtr.get());
-            std::ostringstream oid;
-            oid << resource->uniqueIdentifier();
-            uniqueId.type = Dart_CObject_kString;
-            uniqueId.value.as_string = const_cast<char*> (oid.str().c_str());
             std::string uri = resource->uri();
             retUri.type = Dart_CObject_kString;
             retUri.value.as_string = const_cast<char*> (uri.c_str());
-            temp[0] = &ptr;
-            temp[1] = &uniqueId;
+
+            // Return it all
+            Dart_CObject * temp[4];
+            temp[0] = &retPtr;
+            temp[1] = &retUid;
             temp[2] = &retUri;
+            temp[3] = &retHost;
             result.type = Dart_CObject_kArray;
             result.value.as_array.values = temp;
-            result.value.as_array.length = 3;
+            result.value.as_array.length = 4;
+            Dart_CObject* servicePortObject = m_message->value.as_array.values[EXT_SERVICE_PORT];
+            Dart_Port reply_port_id = servicePortObject->value.as_send_port.id;
             Dart_PostCObject(reply_port_id, &result);
 #ifdef DEBUG
             std::cout << "<<< foundResource - returned valid result id is " << resource->uniqueIdentifier() << std::endl;
