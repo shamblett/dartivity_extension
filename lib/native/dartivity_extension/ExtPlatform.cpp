@@ -118,7 +118,7 @@ void resourceFindCallback::foundResource(std::shared_ptr<OCResource> resource) {
             retUid.value.as_string = const_cast<char*> (uid.str().c_str());
             
             // Return it all
-            Dart_CObject * temp[7];
+            Dart_CObject * temp[PLATFORM_FIND_RESOURCES_RET_PARAMS];
             temp[0] = &retPtr;
             temp[1] = &retUid;
             temp[2] = &retUri;
@@ -129,7 +129,7 @@ void resourceFindCallback::foundResource(std::shared_ptr<OCResource> resource) {
             
             result.type = Dart_CObject_kArray;
             result.value.as_array.values = temp;
-            result.value.as_array.length = 7;
+            result.value.as_array.length = PLATFORM_FIND_RESOURCES_RET_PARAMS;
             Dart_CObject* servicePortObject = m_message->value.as_array.values[EXT_SERVICE_PORT];
             Dart_Port reply_port_id = servicePortObject->value.as_send_port.id;
             Dart_PostCObject(reply_port_id, &result);
