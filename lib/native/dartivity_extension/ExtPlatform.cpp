@@ -72,51 +72,66 @@ void resourceFindCallback::foundResource(std::shared_ptr<OCResource> resource) {
             std::string host = resource->host();
             retHost.type = Dart_CObject_kString;
             retHost.value.as_string = const_cast<char*> (host.c_str());
-            
-            
+
+
             // Uri
             Dart_CObject retUri;
             std::string uri = resource->uri();
             retUri.type = Dart_CObject_kString;
             retUri.value.as_string = const_cast<char*> (uri.c_str());
 
+            // We don't know how many resource and interface types a resource has so
+            // use dynamic memory allocation, not Dart as we have no zone in this callback.
+
             // Resource types
             Dart_CObject retResourceTypes;
+            Dart_CObject* resTemp;
             std::vector<std::string> resourceTypes = resource->getResourceTypes();
-            // Encode as one long string
-            std::string outResourceString;
+            long unsigned int resourceTypesLen = resourceTypes.size();
+            Dart_CObject** resourceTemp = new Dart_CObject*[resourceTypesLen];
+            int i = 0;
             for (std::vector<std::string>::iterator it = resourceTypes.begin(); it != resourceTypes.end(); ++it) {
-                outResourceString+= *it;
-                outResourceString+="??";
+                resTemp = new Dart_CObject;
+                resTemp->type = Dart_CObject_kString;
+                resTemp->value.as_string = const_cast<char*> ((*it).c_str());
+                resourceTemp[i] = resTemp;
+                i++;
             }
-            retResourceTypes.type = Dart_CObject_kString;
-            retResourceTypes.value.as_string =  const_cast<char*>(outResourceString.c_str());
-            
+            retResourceTypes.type = Dart_CObject_kArray;
+            retResourceTypes.value.as_array.values = resourceTemp;
+            retResourceTypes.value.as_array.length = resourceTypesLen;
+
             // Interface types
             Dart_CObject retInterfaceTypes;
-            std::vector<std::string> interfaceTypes = resource->getResourceInterfaces();
-            // Encode as one long string
-            std::string outInterfaceString;
-            for (std::vector<std::string>::iterator it = interfaceTypes.begin(); it != interfaceTypes.end(); ++it) {
-                outInterfaceString+= *it;
-                outInterfaceString+="??";
+            Dart_CObject* intTemp;
+            std::vector<std::string> intTypes = resource->getResourceInterfaces();
+            long unsigned intTypesLen = intTypes.size();
+            Dart_CObject** interfaceTemp = new Dart_CObject*[intTypesLen];
+            i = 0;
+            for (std::vector<std::string>::iterator it = intTypes.begin(); it != intTypes.end(); ++it) {
+                intTemp = new Dart_CObject;
+                intTemp->type = Dart_CObject_kString;
+                intTemp->value.as_string = const_cast<char*> ((*it).c_str());
+                interfaceTemp[i] = intTemp;
+                i++;
             }
-            retInterfaceTypes.type = Dart_CObject_kString;
-            retInterfaceTypes.value.as_string =  const_cast<char*>(outInterfaceString.c_str());
-            
+            retInterfaceTypes.type = Dart_CObject_kArray;
+            retInterfaceTypes.value.as_array.values = interfaceTemp;
+            retInterfaceTypes.value.as_array.length = intTypesLen;
+
             // Observable
             Dart_CObject retObservable;
             bool observable = resource->isObservable();
             retObservable.type = Dart_CObject_kBool;
             retObservable.value.as_bool = observable;
-            
+
             // Unique id
             Dart_CObject retUid;
             std::ostringstream uid;
             uid << resource->uniqueIdentifier();
             retUid.type = Dart_CObject_kString;
             retUid.value.as_string = const_cast<char*> (uid.str().c_str());
-            
+
             // Return it all
             Dart_CObject * temp[PLATFORM_FIND_RESOURCES_RET_PARAMS];
             temp[0] = &retPtr;
@@ -126,13 +141,18 @@ void resourceFindCallback::foundResource(std::shared_ptr<OCResource> resource) {
             temp[4] = &retResourceTypes;
             temp[5] = &retInterfaceTypes;
             temp[6] = &retObservable;
-            
+
             result.type = Dart_CObject_kArray;
             result.value.as_array.values = temp;
             result.value.as_array.length = PLATFORM_FIND_RESOURCES_RET_PARAMS;
             Dart_CObject* servicePortObject = m_message->value.as_array.values[EXT_SERVICE_PORT];
             Dart_Port reply_port_id = servicePortObject->value.as_send_port.id;
             Dart_PostCObject(reply_port_id, &result);
+
+            // Free our allocated memory
+            delete[] resourceTemp;
+            delete[] interfaceTemp;
+
 #ifdef DEBUG
             std::cout << "<<< foundResource - returned valid result id is " << resource->uniqueIdentifier() << std::endl;
 #endif
