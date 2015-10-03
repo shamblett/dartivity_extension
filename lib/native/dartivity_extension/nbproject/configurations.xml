@@ -75,7 +75,6 @@
             <linkerLibLibItem>rcs_container</linkerLibLibItem>
             <linkerLibLibItem>rcs_server</linkerLibLibItem>
             <linkerLibLibItem>tinydtls</linkerLibLibItem>
-            <linkerLibLibItem>NotificationManager</linkerLibLibItem>
             <linkerLibLibItem>TestBundle</linkerLibLibItem>
           </linkerLibItems>
         </linkerTool>
