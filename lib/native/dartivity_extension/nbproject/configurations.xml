@@ -61,9 +61,6 @@
           </linkerAddLib>
           <commandlineTool>g++</commandlineTool>
           <linkerLibItems>
-            <linkerLibLibItem>SSMCore</linkerLibLibItem>
-            <linkerLibLibItem>SSMSDK</linkerLibLibItem>
-            <linkerLibLibItem>TGMSDKLibrary</linkerLibLibItem>
             <linkerLibLibItem>c_common</linkerLibLibItem>
             <linkerLibLibItem>coap</linkerLibLibItem>
             <linkerLibLibItem>connectivity_abstraction</linkerLibLibItem>
@@ -73,7 +70,6 @@
             <linkerLibLibItem>ocpmapi</linkerLibLibItem>
             <linkerLibLibItem>ocsrm</linkerLibLibItem>
             <linkerLibLibItem>octbstack</linkerLibLibItem>
-            <linkerLibLibItem>ppm</linkerLibLibItem>
             <linkerLibLibItem>rcs_client</linkerLibLibItem>
             <linkerLibLibItem>rcs_common</linkerLibLibItem>
             <linkerLibLibItem>rcs_container</linkerLibLibItem>
@@ -81,9 +77,6 @@
             <linkerLibLibItem>tinydtls</linkerLibLibItem>
             <linkerLibLibItem>NotificationManager</linkerLibLibItem>
             <linkerLibLibItem>TestBundle</linkerLibLibItem>
-            <linkerLibLibItem>cpluff</linkerLibLibItem>
-            <linkerLibLibItem>mosquitto</linkerLibLibItem>
-            <linkerLibLibItem>pmimpl</linkerLibLibItem>
           </linkerLibItems>
         </linkerTool>
       </compileType>
