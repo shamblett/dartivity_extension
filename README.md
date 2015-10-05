@@ -7,7 +7,7 @@ C/C++ IOT client bindings to the server side Dartivity client.
 As such it is maintained in step with this project, please see the Dartivity project for changelog,
 release details, documentation etc.
 
-The project itself is a Netbeans based C/C++ project taht can be built either from within Netbeanss or
+The project itself is a Netbeans based C/C++ project that can be built either from within Netbeans or
 from the command line.
 
 Note the package depends on various 3rd party libraries to build, inspection of the Netbeans
