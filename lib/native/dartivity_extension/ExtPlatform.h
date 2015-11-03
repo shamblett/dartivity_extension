@@ -32,7 +32,7 @@ const int PLATFORM_FIND_RESOURCES_RET_PARAMS = 7;
 /**
  * Find resource wait
  */
-const int PLATFORM_FIND_WAIT = 6000;
+const int PLATFORM_FIND_WAIT = 10000;
 
 /**
  * Find resource time slice
