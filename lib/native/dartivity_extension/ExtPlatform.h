@@ -30,6 +30,27 @@ const int PLATFORM_FIND_RESOURCES_PARAMS = 5;
 const int PLATFORM_FIND_RESOURCES_RET_PARAMS = 7;
 
 /**
+ * Find resource wait
+ */
+const int PLATFORM_FIND_WAIT = 6000;
+
+/**
+ * Find resource time slice
+ */
+const int PLATFORM_FIND_SLICE = 500; //us
+
+/**
+ * Seconds to wait for discovery
+ * 
+ *  (PLATFORM_FIND_WAIT * PLATFORM_FIND_SLICE) / 1000000
+ */
+
+/**
+ * Max number of discoverable resources
+ */
+const int MAX_DISCOVERABLE_RESOURCES = 30;
+
+/**
  * Service port
  */
 void platformServicePort(Dart_NativeArguments arguments);

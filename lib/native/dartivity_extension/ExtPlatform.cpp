@@ -21,14 +21,17 @@ public:
 
     static Dart_CObject* m_message;
     static bool m_callbackInvoked;
-
+    static Dart_CObject** m_resList;
+    static int m_resListCount;
 };
 Dart_CObject* resourceFindCallback::m_message;
 bool resourceFindCallback::m_callbackInvoked;
+Dart_CObject** resourceFindCallback::m_resList;
+int resourceFindCallback::m_resListCount;
 
 void resourceFindCallback::foundResource(std::shared_ptr<OCResource> resource) {
 
-    Dart_CObject result;
+    Dart_CObject* result = new Dart_CObject;
 
     // Indicate invocation
     m_callbackInvoked = true;
@@ -39,9 +42,9 @@ void resourceFindCallback::foundResource(std::shared_ptr<OCResource> resource) {
             // Return a boolean here to indicate no resources found
             Dart_CObject* servicePortObject = m_message->value.as_array.values[EXT_SERVICE_PORT];
             Dart_Port reply_port_id = servicePortObject->value.as_send_port.id;
-            result.type = Dart_CObject_kBool;
-            result.value.as_bool = false;
-            Dart_PostCObject(reply_port_id, &result);
+            result->type = Dart_CObject_kBool;
+            result->value.as_bool = false;
+            Dart_PostCObject(reply_port_id, result);
 #ifdef DEBUG
             std::cout << "<<< foundResource - returned invalid result" << std::endl;
 #endif
@@ -142,17 +145,13 @@ void resourceFindCallback::foundResource(std::shared_ptr<OCResource> resource) {
             temp[5] = &retInterfaceTypes;
             temp[6] = &retObservable;
 
-            result.type = Dart_CObject_kArray;
-            result.value.as_array.values = temp;
-            result.value.as_array.length = PLATFORM_FIND_RESOURCES_RET_PARAMS;
-            Dart_CObject* servicePortObject = m_message->value.as_array.values[EXT_SERVICE_PORT];
-            Dart_Port reply_port_id = servicePortObject->value.as_send_port.id;
-            Dart_PostCObject(reply_port_id, &result);
-
-            // Free our allocated memory
-            delete[] resourceTemp;
-            delete[] interfaceTemp;
-
+            result->type = Dart_CObject_kArray;
+            result->value.as_array.values = temp;
+            result->value.as_array.length = PLATFORM_FIND_RESOURCES_RET_PARAMS;
+            if (m_resListCount <= (MAX_DISCOVERABLE_RESOURCES - 1)) {
+                m_resList[m_resListCount] = result;
+                ++m_resListCount;
+            }
 #ifdef DEBUG
             std::cout << "<<< foundResource - returned valid result id is " << resource->uniqueIdentifier() << std::endl;
 #endif
@@ -194,6 +193,8 @@ void platformFindResource(Dart_Port dest_port_id,
             resourceMutex.lock();
             resourceFindCallback::m_message = message;
             resourceFindCallback::m_callbackInvoked = false;
+            resourceFindCallback::m_resListCount = 0;
+            resourceFindCallback::m_resList = new Dart_CObject*[MAX_DISCOVERABLE_RESOURCES];
 #ifdef DEBUG
             std::cout << "<<< platformFindResource - in mutex calling findResource" << std::endl;
 #endif
@@ -208,25 +209,34 @@ void platformFindResource(Dart_Port dest_port_id,
             // Wait until we either find the resource or give up, in which case we
             // return failed to find resource. Note, to allow the iotivity client to work better
             // we do lots of little sleeps rather than a few big ones.
-            // TODO add params to tune this loop rather than rely on hard code.
             int waitCount = 0;
-            while (!resourceFindCallback::m_callbackInvoked) {
-                waitCount++;
-                if (waitCount == 10000) {
-                    // Return a boolean here to indicate no resources found
+            while (true) {
+                ++waitCount;
+                if (waitCount == PLATFORM_FIND_WAIT) {
                     Dart_CObject* servicePortObject = message->value.as_array.values[EXT_SERVICE_PORT];
                     Dart_Port reply_port_id = servicePortObject->value.as_send_port.id;
                     Dart_CObject result;
-                    result.type = Dart_CObject_kBool;
-                    result.value.as_bool = false;
-                    Dart_PostCObject(reply_port_id, &result);
-
+                    if (!resourceFindCallback::m_callbackInvoked) {
+                        // Return a boolean here to indicate no resources found                       
+                        result.type = Dart_CObject_kBool;
+                        result.value.as_bool = false;
 #ifdef DEBUG
-                    std::cout << "<<< platformFindResource - in mutex returned not found result" << std::endl;
+                        std::cout << "<<< platformFindResource - in mutex returned not found result" << std::endl;
 #endif
+                    } else {
+                        // Return the found resource list                     
+                        result.type = Dart_CObject_kArray;
+                        result.value.as_array.values = resourceFindCallback::m_resList;
+                        result.value.as_array.length = resourceFindCallback::m_resListCount;
+#ifdef DEBUG
+                        std::cout << "<<< platformFindResource - in mutex returned found result, count is " << resourceFindCallback::m_resListCount << std::endl;
+#endif
+                    }
+                    Dart_PostCObject(reply_port_id, &result);
+                    delete[] resourceFindCallback::m_resList;
                     break;
                 } else {
-                    usleep(500); //microseconds
+                    usleep(PLATFORM_FIND_SLICE);
                 }
             }
         }
